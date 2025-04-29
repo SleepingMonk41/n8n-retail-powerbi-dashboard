@@ -1,2 +1,67 @@
-# n8n-retail-powerbi-dashboard
-An end-to-end fully automated Power BI dashboard using open-source tools
+# n8n +  Power BI Automated Retail Sales Data Dashboard
+
+This project demonstrates an end-to-end **automated retail analytics dashboard** using only open-source tools. It fetches product and cart data from a public API, transforms it using Python in n8n, and visualizes it in Power BI. The dashboard auto-refreshes at scheduled intervals using AutoHotKey and Windows Task Scheduler.
+
+---
+
+## 🔧 Tools Used
+
+- **n8n (via Docker)** – for data fetching, transformation, and automation
+- **Python** – for JSON flattening and CSV generation
+- **Power BI Desktop** – for data visualization
+- **AutoHotKey + Windows Task Scheduler** – for automated dashboard refresh
+
+---
+
+## 📊 Project Workflow
+
+1. **Data Extraction**  
+   Fetches product, cart, and user data from `dummyjson.com` using n8n HTTP request nodes.
+
+2. **Transformation**  
+   Python code node flattens nested JSON, handles missing values, and converts it into CSV format using in-memory buffers.
+
+3. **File Output**  
+   CSV files are saved locally using Docker-mounted volumes.
+
+4. **Power BI Reporting**  
+   The CSVs are imported into Power BI and transformed using Power Query. Dashboard visuals include:
+   - Top products
+   - Revenue metrics
+   - Cart insights
+   - Category performance
+
+5. **Automation**  
+   - AutoHotKey script refreshes the `.pbix` file
+   - Scheduled with Windows Task Scheduler
+   - Fully hands-free update pipeline
+
+---
+
+## 💡 Highlights
+
+- **100% Open Source Stack**
+- Dynamic schema generation in Python
+- No temporary file handling—everything is in-memory
+- Auto-refresh setup with AHK scripting
+- Easy to extend or adapt for other data sources
+
+---
+
+## 📁 Folder Structure
+
+📁 n8n_workflows/     # JSON export of your n8n workflow
+📁 sample_data/       # Output CSVs (products.csv, carts.csv, users.csv)
+📁 automation/        # AutoHotKey script
+📁 powerbi/           # Power BI .pbix dashboard file
+
+---
+
+## 📌 Author
+
+Made  by Varghese Jose  
+📧 Contact:[LinkedIn](www.linkedin.com/in/varghese-jose41)
+
+---
+
+> Feel free to fork, reuse, or build upon this project for your own analytics pipelines!
