@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "url": "https://dummyjson.com/products?skip=0&limit=0",
+        "url": "https://dummyjson.com/products",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
@@ -25,7 +25,7 @@
     },
     {
       "parameters": {
-        "url": "https://dummyjson.com/carts?skip=0&limit=0",
+        "url": "https://dummyjson.com/carts",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -39,7 +39,7 @@
     },
     {
       "parameters": {
-        "url": "https://dummyjson.com/users?skip=0&limit=0",
+        "url": "https://dummyjson.com/users",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
