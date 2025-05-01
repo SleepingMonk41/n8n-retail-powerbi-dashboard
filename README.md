@@ -50,10 +50,11 @@ This project demonstrates an end-to-end **automated retail analytics dashboard**
 
 ## 📁 Folder Structure
 
+📁 scripts/           # Python code used in n8n Code nodes
 📁 n8n_workflows/     # JSON export of your n8n workflow
 📁 sample_data/       # Output CSVs (products.csv, carts.csv, users.csv)
 📁 automation/        # AutoHotKey script
-📁 powerbi/           # Power BI .pbix dashboard file
+📁 powerbi/           # Power BI .pbix dashboard file and screenshots of dashboard
 
 ---
 
