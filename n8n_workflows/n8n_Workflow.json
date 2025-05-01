@@ -1,0 +1,359 @@
+{
+  "name": "Retail Store Dashboard",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://dummyjson.com/products?skip=0&limit=0",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {
+          "queryParameterArrays": "brackets"
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        20,
+        460
+      ],
+      "id": "6266f2bb-1692-4bb0-b27b-cf6c1154b88e",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "https://dummyjson.com/carts?skip=0&limit=0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        20,
+        660
+      ],
+      "id": "6069d534-1862-45f8-8fd6-21eaf618b5f0",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "url": "https://dummyjson.com/users?skip=0&limit=0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        20,
+        860
+      ],
+      "id": "c02a3d70-1689-499e-8985-169ede2fa411",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "import csv\nimport io\nimport base64\nfrom datetime import datetime\n\ndef process(items):\n    result_items = []\n\n    for item in items:\n        output_item = {\"json\": {}, \"binary\": {}}\n        products = item.get(\"json\", {}).get(\"products\", [])\n\n        if not products:\n            output_item[\"json\"][\"error\"] = \"No products found\"\n            result_items.append(output_item)\n            continue\n\n        # Get all possible fieldnames from the first product\n        sample_product = products[0]\n        fieldnames = list(sample_product.keys())\n        \n        # Add flattened dimensions\n        fieldnames += [\"dimensions_width\", \"dimensions_height\", \"dimensions_depth\"]\n        \n        # Add review fields\n        fieldnames += [\n            f\"review_{i}_{field}\"\n            for i in range(1,4)\n            for field in [\"rating\", \"comment\", \"reviewer\"]\n        ]\n        \n        # Remove original nested fields\n        fieldnames = [f for f in fieldnames if f not in {\"dimensions\", \"reviews\", \"tags\"}]\n        fieldnames.append(\"tags\")  # Re-add as joined string\n\n        output = io.StringIO()\n        writer = csv.DictWriter(\n            output,\n            fieldnames=fieldnames,\n            delimiter=\",\",\n            quoting=csv.QUOTE_ALL  # Quote all fields for safety\n        )\n        writer.writeheader()\n\n        for product in products:\n            flat = {}\n            \n            # Handle simple fields\n            for key in [\"id\", \"title\", \"availabilityStatus\", \"brand\", \"category\",\n                       \"description\", \"discountPercentage\", \"minimumOrderQuantity\",\n                       \"price\", \"rating\", \"returnPolicy\", \"shippingInformation\",\n                       \"sku\", \"stock\", \"thumbnail\", \"warrantyInformation\", \"weight\"]:\n                flat[key] = product.get(key)\n\n            # Handle dimensions\n            dimensions = product.get(\"dimensions\", {})\n            flat.update({\n                \"dimensions_width\": dimensions.get(\"width\"),\n                \"dimensions_height\": dimensions.get(\"height\"),\n                \"dimensions_depth\": dimensions.get(\"depth\")\n            })\n\n            # Handle tags\n            flat[\"tags\"] = \", \".join(product.get(\"tags\", []))\n\n            # Handle reviews\n            reviews = product.get(\"reviews\", [])\n            for i, review in enumerate(reviews[:3], 1):\n                flat.update({\n                    f\"review_{i}_rating\": review.get(\"rating\"),\n                    f\"review_{i}_comment\": review.get(\"comment\"),\n                    f\"review_{i}_reviewer\": review.get(\"reviewerName\")\n                })\n\n            writer.writerow(flat)\n\n        csv_content = output.getvalue()\n        csv_content = output.getvalue()\n        output_item[\"json\"][\"csv\"] = csv_content\n        output_item[\"json\"][\"fileName\"]=f\"products_consistent_{datetime.now().strftime('%Y%m%d%H%M%S')}.csv\"\n        result_items.append(output_item)\n\n    return result_items\n\nreturn process(items)"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        460
+      ],
+      "id": "6cad959b-c423-4822-87d5-9f50e4ca9717",
+      "name": "Code",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/data/shared/product.csv",
+        "dataPropertyName": "=products_data",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        680,
+        460
+      ],
+      "id": "cf7591f3-2379-4265-b29d-9599ba3d1743",
+      "name": "Read/Write Files from Disk3"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "csv",
+        "binaryPropertyName": "products_data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        460,
+        460
+      ],
+      "id": "c77f773a-1ea5-4b5c-a78e-15b7981092ce",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "import csv\nimport io\nimport random\nfrom datetime import datetime\n\ndef process(items):\n    result_items = []\n\n    for item in items:\n        output_item = {\"json\": {}}\n        carts = item.get(\"json\", {}).get(\"carts\", [])\n\n        if not carts:\n            output_item[\"json\"][\"error\"] = \"No carts found\"\n            result_items.append(output_item)\n            continue\n\n        # Add user_id as second column\n        fieldnames = [\n            \"cart_id\", \"user_id\", \"product_id\", \"title\", \"price\", \"quantity\",\n            \"total\", \"discountPercentage\", \"discountedTotal\", \"thumbnail\"\n        ]\n\n        output = io.StringIO()\n        writer = csv.DictWriter(output, fieldnames=fieldnames, delimiter=\",\", quoting=csv.QUOTE_ALL)\n        writer.writeheader()\n\n        # Dictionary to store consistent user_id per cart_id\n        cart_user_map = {}\n\n        for cart in carts:\n            cart_id = cart.get(\"id\")\n\n            # Assign a user_id only once per cart_id\n            if cart_id not in cart_user_map:\n                cart_user_map[cart_id] = random.randint(1, 208)\n\n            user_id = cart_user_map[cart_id]\n\n            for product in cart.get(\"products\", []):\n                row = {\n                    \"cart_id\": cart_id,\n                    \"user_id\": user_id,\n                    \"product_id\": product.get(\"id\"),\n                    \"title\": product.get(\"title\"),\n                    \"price\": f'{product.get(\"price\", 0):.2f}',\n                    \"quantity\": product.get(\"quantity\"),\n                    \"total\": f'{product.get(\"total\", 0):.2f}',\n                    \"discountPercentage\": f'{product.get(\"discountPercentage\", 0):.2f}',\n                    \"discountedTotal\": f'{product.get(\"discountedTotal\", 0):.2f}',\n                    \"thumbnail\": product.get(\"thumbnail\"),\n                }\n                writer.writerow(row)\n\n        csv_content = output.getvalue()\n        output_item[\"json\"][\"csv\"] = csv_content\n        output_item[\"json\"][\"fileName\"] = f\"carts_{datetime.now().strftime('%Y%m%d%H%M%S')}.csv\"\n        result_items.append(output_item)\n\n    return result_items\n\nreturn process(items)\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        660
+      ],
+      "id": "37ea9d4a-fdac-477a-84c7-ae54f24da3a0",
+      "name": "Code1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "csv",
+        "binaryPropertyName": "carts_data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        460,
+        660
+      ],
+      "id": "efbb87ce-cb63-401a-b2c9-a668fcd44831",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/data/shared/carts.csv",
+        "dataPropertyName": "=carts_data",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        680,
+        660
+      ],
+      "id": "f9c27034-d774-40b1-9c74-48ae2b292901",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "import csv\nimport io\nfrom datetime import datetime\n\ndef process(items):\n    result_items = []\n\n    for item in items:\n        output_item = {\"json\": {}}\n        users = item.get(\"json\", {}).get(\"users\", [])\n\n        if not users:\n            output_item[\"json\"][\"error\"] = \"No users found\"\n            result_items.append(output_item)\n            continue\n\n        # Define all the columns we want\n        fieldnames = [\n            \"id\", \"firstName\", \"lastName\", \"maidenName\", \"age\", \"gender\",\n            \"email\", \"phone\", \"username\", \"password\", \"birthDate\", \"image\",\n            \"bloodGroup\", \"height\", \"weight\", \"eyeColor\",\n            \"hair_color\", \"hair_type\",\n            \"ip\",\n            \"address_address\", \"address_city\", \"address_postalCode\",\n            \"address_state\", \"address_coordinates_lat\", \"address_coordinates_lng\"\n        ]\n\n        output = io.StringIO()\n        writer = csv.DictWriter(output, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)\n        writer.writeheader()\n\n        for user in users:\n            flat = {\n                \"id\": user.get(\"id\"),\n                \"firstName\": user.get(\"firstName\"),\n                \"lastName\": user.get(\"lastName\"),\n                \"maidenName\": user.get(\"maidenName\"),\n                \"age\": user.get(\"age\"),\n                \"gender\": user.get(\"gender\"),\n                \"email\": user.get(\"email\"),\n                \"phone\": user.get(\"phone\"),\n                \"username\": user.get(\"username\"),\n                \"password\": user.get(\"password\"),\n                \"birthDate\": user.get(\"birthDate\"),\n                \"image\": user.get(\"image\"),\n                \"bloodGroup\": user.get(\"bloodGroup\"),\n                \"height\": f'{user.get(\"height\", 0):.2f}',\n                \"weight\": f'{user.get(\"weight\", 0):.2f}',\n                \"eyeColor\": user.get(\"eyeColor\"),\n                \"hair_color\": user.get(\"hair\", {}).get(\"color\"),\n                \"hair_type\": user.get(\"hair\", {}).get(\"type\"),\n                \"ip\": user.get(\"ip\"),\n                \"address_address\": user.get(\"address\", {}).get(\"address\"),\n                \"address_city\": user.get(\"address\", {}).get(\"city\"),\n                \"address_postalCode\": user.get(\"address\", {}).get(\"postalCode\"),\n                \"address_state\": user.get(\"address\", {}).get(\"state\"),\n                \"address_coordinates_lat\": user.get(\"address\", {}).get(\"coordinates\", {}).get(\"lat\"),\n                \"address_coordinates_lng\": user.get(\"address\", {}).get(\"coordinates\", {}).get(\"lng\")\n            }\n\n            writer.writerow(flat)\n\n        csv_content = output.getvalue()\n        output_item[\"json\"][\"csv\"] = csv_content\n        output_item[\"json\"][\"fileName\"] = f\"users_export_{datetime.now().strftime('%Y%m%d%H%M%S')}.csv\"\n        result_items.append(output_item)\n\n    return result_items\n\nreturn process(items)\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        860
+      ],
+      "id": "b8bb3e07-b121-4098-9517-026886fdbda4",
+      "name": "Code2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "csv",
+        "binaryPropertyName": "users_data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        460,
+        860
+      ],
+      "id": "d29e5af1-1e8d-425c-bb66-cf50ce662360",
+      "name": "Convert to File2"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/data/shared/users.csv",
+        "dataPropertyName": "=users_data",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        680,
+        860
+      ],
+      "id": "b992ec18-2bcc-40ea-935d-ef194db3e9cb",
+      "name": "Read/Write Files from Disk1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -340,
+        660
+      ],
+      "id": "ff8a1e65-2924-4bdd-b2e8-ccb4f0f5294e",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Convert to File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File2": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk1": {
+      "main": [
+        []
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e95f5e3a-ec34-47ca-98a9-8449dcb3ffe5",
+  "meta": {
+    "instanceId": "140e1edf1a0518714985e1e5f48bfa852bc8e11352ef825500a89efa3e6728f8"
+  },
+  "id": "60Mt0fRg1xtR1iv5",
+  "tags": []
+}
