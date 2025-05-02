@@ -34,7 +34,7 @@ This project demonstrates an end-to-end **automated retail analytics dashboard**
 5. **Automation**  
    - AutoHotKey script refreshes the `.pbix` file
    - Scheduled with Windows Task Scheduler
-   - Fully hands-free update pipeline
+   - Fully hands-free data update pipeline
 
 ---
 
