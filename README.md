@@ -40,7 +40,7 @@ This project demonstrates an end-to-end **automated retail analytics dashboard**
 
 ## 💡 Highlights
 
-- **100% Open Source Stack**
+- **End-to-end solution using publicly accessible and modifiable tools**
 - Dynamic schema generation in Python
 - No temporary file handling—everything is in-memory
 - Auto-refresh setup with AHK scripting
