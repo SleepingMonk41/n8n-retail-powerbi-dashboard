@@ -1,6 +1,6 @@
 # n8n +  Power BI Automated Retail Sales Data Dashboard
 
-This project demonstrates an end-to-end **automated retail analytics dashboard** using only open-source tools. It fetches product and cart data from a public API, transforms it using Python in n8n, and visualizes it in Power BI. The dashboard auto-refreshes at scheduled intervals using AutoHotKey and Windows Task Scheduler.
+This project demonstrates an end-to-end **automated retail analytics dashboard** using only free and self-hostable tools. This project fetches product and cart data from a public API, transforms it using Python in n8n, and visualizes it in Power BI. The dashboard auto-refreshes at scheduled intervals using AutoHotKey and Windows Task Scheduler.
 
 ---
 
