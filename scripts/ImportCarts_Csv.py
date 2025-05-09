@@ -31,7 +31,7 @@ def process(items):
         for cart in carts:
             cart_id = cart.get("id")
 
-            # Assign a user_id only once per cart_id
+            # Assign a random user_id per cart_id
             if cart_id not in cart_user_map:
                 cart_user_map[cart_id] = random.randint(1, 208)
 
