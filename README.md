@@ -61,7 +61,7 @@ This project demonstrates an end-to-end **automated retail analytics dashboard**
 ## 📌 Author
 
 Made  by Varghese Jose  
-📧 Contact:[LinkedIn](www.linkedin.com/in/varghese-jose41/)
+📧 Contact:[LinkedIn](https://www.linkedin.com/in/varghese-jose41)
 
 ---
 
