@@ -65,4 +65,4 @@ Made  by Varghese Jose
 
 ---
 
-> Feel free to fork, reuse, or build upon this project for your own analytics pipelines!
+> Feel free to reuse, or build upon this project for your own analytics pipelines!
